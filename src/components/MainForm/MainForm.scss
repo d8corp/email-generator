@@ -1,0 +1,29 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  background: #f9f9f9;
+  align-items: center;
+  justify-content: center;
+}
+.select {
+  width: 120px;
+  margin: 10px;
+  background: #ddd;
+  border: 9px solid transparent;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.download,
+.button {
+  width: 120px;
+  margin: 10px;
+  background: #08b31d;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+}
+.download {
+  background: #0863b3;
+}

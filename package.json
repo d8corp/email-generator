@@ -1,0 +1,15 @@
+{
+  "scripts": {
+    "build": "npx innetjs build",
+    "start": "npx innetjs start"
+  },
+  "dependencies": {
+    "innet": "^0.1.0",
+    "jodit": "^3.6.15",
+    "tslib": "^2.2.0",
+    "watch-state": "^2.0.2"
+  },
+  "devDependencies": {
+    "innetjs": "^1.0.2"
+  }
+}
