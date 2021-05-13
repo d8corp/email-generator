@@ -37,6 +37,7 @@ function generate (template: string, table: string): string {
 
 class MainForm {
   onSubmitProp: (v: string) => any
+  getValueProp: () => string
 
   @state keys = []
 
@@ -64,17 +65,16 @@ class MainForm {
     this.keys = table.split('\n')[0].split('\t')
   }
 
-  onDownload = async e => {
+  onDownload = e => {
     e.preventDefault()
     e.stopPropagation()
 
-    const content = await this.getValue()
-
-    download('index.html', content)
+    download('index.html', this.getValueProp())
   }
 
-  render ({onSubmit}) {
+  render ({onSubmit, getValue}) {
     this.onSubmitProp = onSubmit
+    this.getValueProp = getValue
 
     return (
       <form class={styles.root} onsubmit={this.onSubmit} ref={this.form}>

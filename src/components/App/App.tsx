@@ -18,7 +18,7 @@ class App {
   render () {
     return (
       <>
-        <MainForm onSubmit={v => this.editor.value = v} />
+        <MainForm getValue={() => this.editor.value} onSubmit={v => this.editor.value = v} />
         <textarea ref={this.textarea} />
       </>
     )
