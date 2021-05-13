@@ -1,9 +1,15 @@
 .root {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   background: #f9f9f9;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 320px;
+  padding-top: 32px;
 }
 .select {
   width: 120px;

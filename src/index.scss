@@ -1,6 +1,6 @@
 body {
   margin: 0;
-  padding: 0;
+  padding: 0 0 0 320px;
   font-family: 'Raleway', sans-serif;
 }
 
@@ -8,5 +8,9 @@ body {
   .jodit-status-bar {
     position: sticky;
     bottom: 0;
+  }
+  .jodit-wysiwyg table tr td, .jodit-wysiwyg table tr th {
+    border: none;
+    vertical-align: auto;
   }
 }

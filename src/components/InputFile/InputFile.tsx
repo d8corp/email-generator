@@ -30,6 +30,7 @@ class InputFile {
         <input
           class={styles.input}
           accept={accept}
+          onclick={() => this.label = ''}
           oninput={this.onInput}
           type='file'
           {...props}

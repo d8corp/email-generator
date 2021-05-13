@@ -1,6 +1,7 @@
 import innet, {Ref} from 'innet'
 import InputFile from 'src/components/InputFile'
-import {state} from 'watch-state'
+import {state, cache} from 'watch-state'
+import ejs from 'ejs/ejs.min'
 
 import styles from './MainForm.scss'
 
@@ -26,58 +27,22 @@ function download (filename, text) {
   document.body.removeChild(element)
 }
 
-function generate (template: string, table: string, splitBy = '', splitterTemplate = '{value}', header = '', footer = ''): string {
-  let content = ''
+function generate (template: string, table: string): string {
+  const [keysStr, ...stringItems] = table.split('\n')
+  const keys = keysStr.split('\t').map(k => k.trim())
+  const items = stringItems.map(raw => raw.split('\t').reduce((r, v, i) => (r[keys[i]] = v, r), {}))
 
-  const [keysStr, ...cols] = table.split('\n')
-  const keys = keysStr.split('\t')
-  const reg = new RegExp(keys.map(key => `(\\{${key}\\})`).join('|'), 'g')
-
-  if (splitBy) {
-    const raw = {}
-    const rawKeys = []
-    const splitterIndex = keys.indexOf(splitBy)
-    const typeReg = /(\{key\})|(\{value\})/g
-
-    for (const col of cols) {
-      const calList = col.split('\t')
-      const splitKey = calList[splitterIndex]
-
-      if (splitKey in raw) {
-        raw[splitKey].push(calList)
-      } else {
-        rawKeys.push(splitKey)
-        raw[splitKey] = [calList]
-      }
-    }
-
-    rawKeys.sort()
-
-    for (const key of rawKeys) {
-      let temp = ''
-
-      for (const calList of raw[key]) {
-        temp += template.replaceAll(reg, key => calList[keys.indexOf(key.slice(1, -1))])
-      }
-
-      content += splitterTemplate.replaceAll(typeReg, k => k === '{value}' ? temp : k === '{key}' ? key : k)
-    }
-
-  } else {
-    for (const col of cols) {
-      const calList = col.split('\t')
-      content += template.replaceAll(reg, key => calList[keys.indexOf(key.slice(1, -1))])
-    }
-  }
-
-  return `${header}${content}${footer}`
+  return ejs.render(template, {items, keys})
 }
 
 class MainForm {
   onSubmitProp: (v: string) => any
 
   @state keys = []
-  @state splitterSelected
+
+  @cache get showSelector () {
+    return this.keys.length
+  }
 
   form = new Ref()
 
@@ -89,37 +54,23 @@ class MainForm {
   async getValue () {
     const formData = new FormData(this.form.value)
 
-    const header = await readFile(formData.get('header') as File)
-    const footer = await readFile(formData.get('footer') as File)
     const template = await readFile(formData.get('template') as File)
     const table = await readFile(formData.get('table') as File)
-    const splitter = (await readFile(formData.get('splitter') as File)) || '{value}'
-    const splitBy = formData.get('splitBy') as string
 
-    return generate(template, table, splitBy, splitter, header, footer)
+    return generate(template, table)
   }
 
   onTableSelected = table => {
     this.keys = table.split('\n')[0].split('\t')
   }
 
-  onSplitterSelected = () => {
-    this.splitterSelected = true
-  }
   onDownload = async e => {
     e.preventDefault()
     e.stopPropagation()
 
-    const formData = new FormData(this.form.value)
-
-    const html = await readFile(formData.get('html') as File)
     const content = await this.getValue()
 
-    if (html) {
-      download('index.html', html.replace(/\{content\}/, content))
-    } else {
-      download('index.html', content)
-    }
+    download('index.html', content)
   }
 
   render ({onSubmit}) {
@@ -128,50 +79,26 @@ class MainForm {
     return (
       <form class={styles.root} onsubmit={this.onSubmit} ref={this.form}>
         <InputFile
-          accept='text/html'
-          label='Header'
-          name='header'
-        />
-        <InputFile
-          accept='text/html'
-          label='Footer'
-          name='footer'
-        />
-        <InputFile
-          onInput={this.onSplitterSelected}
-          accept='text/html'
-          label='Splitter'
-          name='splitter'
-        />
-        <InputFile
-          required
-          accept='text/html'
-          label='Template'
-          name='template'
-        />
-        <InputFile
           required
           onInput={this.onTableSelected}
           accept='text/tab-separated-values'
           label='Table'
           name='table'
         />
-        {() => this.splitterSelected && this.keys.length ? (
-          <select name='splitBy' class={styles.select}>
-            {() => this.keys.map(key => <option value={key}>{key}</option>)}
-          </select>
-        ) : null}
-        <button class={styles.button}>
-          Generate
-        </button>
         <InputFile
-          accept='text/html'
-          label='HTML'
-          name='html'
+          required
+          accept='.ejs'
+          label='Template'
+          name='template'
         />
-        <button class={styles.download} onclick={this.onDownload}>
-          Download
-        </button>
+        <div>
+          <button class={styles.button}>
+            Generate
+          </button>
+          <button class={styles.download} onclick={this.onDownload}>
+            Download
+          </button>
+        </div>
       </form>
     )
   }
